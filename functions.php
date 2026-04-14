@@ -1,5 +1,8 @@
-<?php
+    <?php
 //※※※↑↑↑functions.phpトップの<?phpより上にはコメントを書かないこと(エラーの原因になる)！※※※
+
+
+// GitHub URL変更確認 20260414
 
 // ------------------------------------------
 // サムネイル画像（アイキャッチ）を使う設定
@@ -57,6 +60,9 @@ add_action('pre_get_posts', 'news_posts_per_page');
 
 
 
+
+
+
 // ------------------------------------------
 // カスタム投稿タイプ「works」（技術ブログ）をつくる
 // ------------------------------------------
@@ -91,11 +97,43 @@ add_action('pre_get_posts', 'news_posts_per_page');
 function cpy_register_works() {
 
     // ▼投稿タイプの名前（ラベル）をまとめたもの
-    //   ※ブログの管理画面に表示される文字。
-    $labels = [
-        'singular_name' => 'tech',   // 1記事の名前 → 技術記事
-        'edit_name'     => 'tech',   // 編集画面の名前
-    ];
+//   ※ブログの管理画面（UI）に表示される文字や、裏側のシステムが使う名前。
+$labels = [
+
+    // ----------------------------------------------------------
+    // ▼① singular_name
+    // ----------------------------------------------------------
+    'singular_name' => 'tech ※singular_name',   
+    // 【UIでの表示】ほぼ表示されない（通常はメニューには出ない）
+    // 【裏側での使用】WordPress内部で「1つの記事の呼び名」として使われる。
+    //   例：更新メッセージなどで “tech を更新しました” と表示される場合がある。
+    // ※表示されないことも多い → 使われるのは内部ロジック中心。
+
+    // ----------------------------------------------------------
+    // ▼② edit_name（⚠ WordPressに存在しないラベル）
+    // ----------------------------------------------------------
+    'edit_name'     => 'tech',
+    // 【UIでの表示】完全に表示されない（無効／ダッシュボードに反映されない）
+    // 【裏側の影響】なし。WordPressのラベル項目に edit_name は存在しないため無効。
+    // ※消しても動作に一切影響なし。
+
+    // ----------------------------------------------------------
+    // ▼③ all_items
+    // ----------------------------------------------------------
+    'all_items'  => '技術ブログ一覧 ※all_items',  
+    // 【UIでの表示】ダッシュボード左メニューで "技術ブログ一覧" をクリックしたときの
+    //   一覧ページのタイトル（上部見出し）として表示される。
+    //   例：ページ上部に「投稿を追加」と表示される。
+    //
+    // ▼表示される場所イメージ：
+    // ┌─────────────────────────┐
+    // │ 投稿を追加                ← ここが all_items の表示場所
+    // └─────────────────────────┘
+    //
+    // 【裏側での影響】管理画面の「一覧画面のラベル」として使われるだけ。
+    //   データ処理には影響しない（名前が変わっても記事データは変わらない）。
+];
+
 
     // ▼ここでテスト：ラベル名の変更による変化を学習できる
     // ▼変更してダッシュボードでどう変わるか試せるテスト案
@@ -105,79 +143,167 @@ function cpy_register_works() {
     //   管理画面の「投稿名」の表示が変わります。
 
 
-    // ▼投稿タイプの設定（とても大事な部分）
-    $args = [
+   // ▼投稿タイプの設定（とても大事な部分）
+// ----------------------------------------------------------
+// $args を書き換えると、ダッシュボードに表示されるメニュー、URL、
+// 投稿画面の機能、有効化されるエディタなどがすべて変わる。
+// ----------------------------------------------------------
+$args = [
 
-        // 管理画面のメニューに表示されるタイトル
-        'label'               => '技術ブログ一覧',
+    // ------------------------------------------------------------------
+    // ▼① label（＝左メニューに表示される投稿タイプの名前）
+    // ------------------------------------------------------------------
+    'label' => '技術ブログ倉庫 ※(functions.php cpy_register_works $args で設定)',
+    // 【UIの変化】
+    //   WordPressダッシュボード左側メニューに表示される。
+    //   「投稿」「固定ページ」と同じ位置に新しい項目が出る。
+    //
+    // 【裏側の影響】
+    //   POST TYPE 名（識別子）は register_post_type() の第一引数に依存するため、
+    //   この label を変えてもデータ構造には一切影響しない。
+    //
+    // ▼テスト例（変えると即ダッシュボードで変化が見える）
+    // 'label' => 'レシピ倉庫',
+    // 'label' => '作品ひきだし',
+    // 'label' => 'なんでもノート',
+    // → ダッシュボード左メニューの「技術ブログ一覧」がこの文字に置き換わる！
+    
 
-        // ▼②テスト：menu名を変えて、ダッシュボードがどう変わるか試せる
-        // 例：
-        // 'label' => 'レシピ倉庫',
-        // 'label' => '作品ひきだし',
-        // 'label' => 'なんでもノート',
-        // → ダッシュボード左メニューの文字が変わる！
+    // ------------------------------------------------------------------
+    // ▼② labels（より細かいラベル設定）
+    // ------------------------------------------------------------------
+    'labels' => $labels,
+    // ※$labels 配列で指定したものが、
+    //   「一覧ページタイトル」「新規追加画面タイトル」「更新メッセージ」
+    //   などに反映される。
+    //
+    // 【UIの変化の例】
+    //   all_items     → 一覧ページ上部タイトルに出る
+    //   add_new_item  → 新規追加ページ上のタイトル
+    //   singular_name → 更新メッセージなどに使われることがある
 
 
-        // 管理画面の細かい名前の設定
-        'labels'              => $labels,
+    // ------------------------------------------------------------------
+    // ▼③ public（一般公開するか）
+    // ------------------------------------------------------------------
+    'public' => true,
+    // 【UIの変化】
+    //   true：通常の投稿と同じように公開できる（URLで誰でも閲覧可能）
+    //   false：管理画面にはあるが、フロント側の閲覧は不可
+    //
+    // 【裏側の影響】
+    //   WordPress の公開状態（公開・非公開・REST API）に影響
 
-        // ↓ここからが「wordpressでどんな動きをするか」の設定
 
-        // ① public：公開する？（true → 公開。一般の人も見られる）
-        'public'              => true,
+    // ------------------------------------------------------------------
+    // ▼④ show_in_rest（ブロックエディタを使うか）
+    // ------------------------------------------------------------------
+    'show_in_rest' => true,
+    // 【UIの変化】
+    //   true：ブロックエディタが使える（Gutenberg）
+    //   false：旧クラシックエディタになる
+    //
+    // 【裏側の影響】
+    //   REST API に公開されるため、
+    //   JavaScript系プラグインやGutenbergが参照できるようになる
 
-        // ② show_in_rest：ブロックエディタを使う？（true → 使える）
-        'show_in_rest'        => true,
 
-        // ③ has_archive：一覧ページを作る？
-        //     true にすると /works で一覧ページが作られる
-        'has_archive'         => true,
+    // ------------------------------------------------------------------
+    // ▼⑤ has_archive（自動で一覧ページを作るか）
+    // ------------------------------------------------------------------
+    'has_archive' => true,
+    // 【UIの変化】
+    //   フロント側に /works/ のような一覧ページが自動生成される
+    //
+    // 【裏側の影響】
+    //   WordPressのリライトルールが追加され、一覧表示が可能になる
 
-        // ④ hierarchical：階層構造？（true→親子関係を作れる）
-        //    技術ブログは普通の投稿と同じなので false（親子不要）
-        'hierarchical'        => false,
 
-        // ⑤ rewrite：URLのルール
-        //    'slug' => 'works'
-        //    → URL が /works/◯◯◯ になるように指定
-        'rewrite'             => [
-            'slug' => 'works',       // スラッグ名（URLの文字）
-            'with_front' => true     // /works の前に /blog を付けるか？ → true
-        ],
+    // ------------------------------------------------------------------
+    // ▼⑥ hierarchical（親子階層を作るか）
+    // ------------------------------------------------------------------
+    'hierarchical' => false,
+    // 【UIの変化】
+    //   true：固定ページのように「親ページ」が選べる（階層を作れる）
+    //   false：投稿と同じで階層なし
+    //
+    // 【裏側の影響】
+    //   階層構造のデータ（page_parent）が使われるかどうかが変わる
 
-        // ▼②テスト：URLの文字も変えて、実際のURLがどう変わるか学習できる
-        // 'slug' => 'techblog',
-        // 'slug' => 'portfolio',
-        // → /techblog や /portfolio に変わる
 
-        // ⑥ menu_position：管理画面での表示位置
-        //    5は “投稿” のすぐ下あたり
-        'menu_position'       => 5,
+    // ------------------------------------------------------------------
+    // ▼⑦ rewrite（URLルール）
+    // ------------------------------------------------------------------
+    'rewrite' => [
+        'slug' => 'works',
+        'with_front' => true
+    ],
+    // 【UIの変化】
+    //   フロント側 URL が /works/〇〇〇 になる
+    //
+    // ▼テスト：ここを変えるとURLの形が変わる
+    //
+    //   'slug' => 'techblog' → /techblog/〇〇〇
+    //   'slug' => 'portfolio' → /portfolio/〇〇〇
+    //
+    // 【裏側の影響】
+    //   リライトルール（.htaccess の内部処理）に新規ルールが追加される
 
-        // ⑦ can_export：エクスポート可能？ → true（OK）
-        'can_export'          => true,
 
-        // ⑧ supports：記事編集で使える機能の種類
-        //    title → タイトル
-        //    editor → 本文
-        //    thumbnail → アイキャッチ
-        //    page-attributes → 並び替え用（menu_order）
-        'supports' => [
-            'title',
-            'editor',
-            'thumbnail',
-            'page-attributes'
-        ],
-    ];
+    // ------------------------------------------------------------------
+    // ▼⑧ menu_position（左メニューでの表示位置）
+    // ------------------------------------------------------------------
+    'menu_position' => 5,
+    // 【UIの変化】
+    //   5 → 「投稿」のすぐ下
+    //   20 → 「固定ページ」の下あたり
+    //
+    // ▼テスト
+    //   3 → ダッシュボードのかなり上に出現
+    //   100 → メニューの一番下に出現
+    //
+    // 【裏側の影響】
+    //   システム処理には影響なし。純粋に UI の順番だけ。
 
-    // ▼WordPress に「新しい投稿タイプ works を作ってね」と登録する
-    register_post_type('works', $args);
+
+    // ------------------------------------------------------------------
+    // ▼⑨ can_export（エクスポートを許可するか）
+    // ------------------------------------------------------------------
+    'can_export' => true,
+    // 【UIの変化】
+    //   ツール → エクスポート で、works投稿をエクスポート可能
+    //
+    // 【裏側の影響】
+    //   WordPressの XML エクスポートで対象に含まれる
+
+
+    // ------------------------------------------------------------------
+    // ▼⑩ supports（投稿編集画面の機能）
+    // ------------------------------------------------------------------
+    'supports' => [
+        'title',          // タイトル入力欄を表示
+        'editor',         // 本文のエディタ（ブロック / クラシック）
+        'thumbnail',      // アイキャッチ画像の設定
+        'page-attributes' // 並び順（menu_order）が使える
+    ],
+    // 【UIの変化】
+    //   これを消したり追加すると、投稿編集画面の項目が増減する
+    //
+    // ▼テスト例
+    //   'excerpt' → 抜粋欄が出現
+    //   'comments' → コメント欄が使えるようになる
+    //
+    // 【裏側の影響】
+    //   WordPressの postmeta（投稿のメタ情報）にどの項目を保存するかが変わる
+];
+
+// ▼WordPressに「新しい投稿タイプ works を作ってね」と指示
+register_post_type('works', $args);
 }
 
-// ▼WordPress が起動したとき（initタイミング）に
-//   上のカスタム投稿タイプを読み込むようにする
+// ▼WordPressが起動したときに上の関数を読み込む
 add_action('init', 'cpy_register_works');
+
 
 
 
@@ -376,20 +502,126 @@ function tetsu_admin_env_style() {
 add_action('admin_head', 'tetsu_admin_env_style');
 
 
+
+
+/*↓↓↓ g-doc備忘録のリンクを追加 2026.04.08*/
+
 /* ======================================================
    ▼ 3. ダッシュボード警告バナー
 ====================================================== */
 add_action('admin_notices', function() {
 
+$common_notice = '
+    <div style="margin-top:10px; line-height:1.8; font-size:16px; text-align:left; max-width:1200px; margin-left:auto; margin-right:auto;">
+
+        <div style="font-size:22px; font-weight:bold; margin-bottom:10px;">
+            📘 CPTカスタム投稿タイプ運用メモ
+        </div>
+
+        <ul style="margin:0 0 15px 20px; padding:0;">
+            <li>カスタム投稿タイプCPTの既存記事の大幅修正は崩れやすい</li>
+            <li>新規記事の追加・複製運用には強い</li>
+            <li>CPT記事を更新したい場合、新規記事へコピペして記事タイトルを変えて元の記事を削除してから</li>
+            <li>ツールのwordpress XML エクスポート / インポート</li>
+            <li>または WP記事を直接コピペして更新</li>
+        </ul>
+
+
+
+
+
+<div style="margin-top:20px; margin-bottom:20px;">
+    <div style="font-size:22px; font-weight:bold; margin-bottom:10px;">
+        🚀 更新方法 早見表
+    </div>
+
+    <ul style="margin:0 0 15px 20px; padding:0; line-height:1.9;">
+        <li>✍️ 1記事 / 複数記事（部分更新） → XML（記事の引っ越し）</li>
+        <li>🚚 サイト丸ごと → .wpress（家ごと引っ越し）</li>
+        <li>🖼 投稿画像 → 基本は WordPress、表示不良時のみ FileZilla uploads</li>
+        <li>🧩 自作テーマ / CPT定義 → FileZillaでテーマ同期（functions.php 最優先）</li>
+        <li>🧯 緊急時 1記事だけ → 直接コピペが最も安全</li>
+    </ul>
+
+    <div style="font-size:20px; font-weight:bold;">
+        💡 一言で覚える
+    </div>
+
+    <div style="margin-left:20px; line-height:1.8;">
+        XML = 記事の引っ越し<br>
+        .wpress = サイト丸ごとの引っ越し
+    </div>
+
+    <div style="font-size:20px; font-weight:bold; margin-top:15px;">
+        🔄 既存CPT記事の更新
+    </div>
+
+    <div style="margin-left:20px; line-height:1.8;">
+        XMLは追加向き<br>
+        更新は直接記事コピペ または 新規投稿へコピペ → XML
+    </div>
+</div>
+
+
+
+
+
+
+
+
+        <div style="font-size:18px; font-weight:bold; margin-bottom:6px;">
+            🔗 G-docリンク
+        </div>
+
+        <ul style="margin:0 0 0 20px; padding:0;">
+            
+            <li>
+                <a href="https://docs.google.com/document/d/1589qwPCYu-iU2IvmWgJn67FdSgIeVWTmIjb08d5dH_c/edit?tab=t.0"
+                   target="_blank"
+                   style="color:#fff; text-decoration:underline;">
+                   【WPブログ記事投稿更新・基本編】記事・画像・テーマ反映・逆反映｜LocalWP→本番
+                </a>
+            </li>
+            <li>
+                <a href="https://docs.google.com/document/d/16eoaSWN__D2yqMTat2TZ5KMsdexfHR0m0evbNWKf-Fk/edit?usp=drive_link"
+                   target="_blank"
+                   style="color:#fff; text-decoration:underline;">
+                   【WPブログ記事投稿更新・応用編_CPT画像トラブル対応】LocalWP→本番｜XMLと.wpress の違い・uploads・FileZilla完全版
+                </a>
+            </li>
+            <li>
+                <a href="https://docs.google.com/document/d/1JdGxaO0h2ldwHrtG8Z3AlR6DPFEi43pdkccXmCPtyNo/edit?tab=t.0#heading=h.5o0291aojspu"
+                   target="_blank"
+                   style="color:#fff; text-decoration:underline;">
+                   【FileZilla】でWordPressに自作テーマをアップロードする方法
+                </a>
+            </li>
+        </ul>
+    </div>
+';
+
+
+
+
     if (WP_ENV === 'production') {
         echo '<div style="padding:12px; background:#ff4444; color:#fff; font-size:18px; font-weight:bold; text-align:center;">
         🔴【本番環境】です。操作に注意！
+        </br>ローカル環境用ocalwpテーマフォルダ → uyokyokusetsu-blog-dev の functions.php の 3. ダッシュボード警告バナーに記載。
+        </br>ローカル環境localwpパス → C:\Users\Tetsuya_new\Local Sites\uyokyokusetsu-blog\app\public\wp-content\themes\uyokyokusetsu-blog-dev
+        </br>ローカル環境localwpはこのfunctions.phpを修正すると即時反映される。
+        </br>本番環境はこのlocalwpテーマフォルダuyokyokusetsu-blog-devをFilleZillaでアップロードして更新する。
+        ' . $common_notice . '
         </div>';
     }
 
     if (WP_ENV === 'local') {
         echo '<div style="padding:12px; background:#2277ff; color:#fff; font-size:18px; font-weight:bold; text-align:center;">
         🔵【ローカル環境】です。安心して編集できます。
+         </br>ローカル環境用ocalwpテーマフォルダ → uyokyokusetsu-blog-dev の functions.php の 3. ダッシュボード警告バナーに記載。
+        </br>ローカル環境localwpパス → C:\Users\Tetsuya_new\Local Sites\uyokyokusetsu-blog\app\public\wp-content\themes\uyokyokusetsu-blog-dev
+        </br>ローカル環境localwpはこのfunctions.phpを修正すると即時反映される。
+        </br>本番環境はこのlocalwpテーマフォルダuyokyokusetsu-blog-devをFilleZillaでアップロードして更新する。
+        ' . $common_notice . '
         </div>';
     }
 

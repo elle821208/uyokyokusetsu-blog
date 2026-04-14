@@ -1,3 +1,23 @@
+
+
+## ローカル環境localwpのテーマフォルダのパス場所
+- ローカルのテーマ：
+```
+Local Sites/uyokyokusetsu-blog-local/app/public/wp-content/themes/Uyokyokusetsu-blog-dev
+```
+
+functions.phpの
+   ▼ 3. ダッシュボード警告バナーで下記をを設定している。
+add_action('admin_notices', function() 
+
+    if (WP_ENV === 'production') 
+        echo '<div style="padding:12px; background:#ff4444; color:#fff; font-size:18px; font-weight:bold; text-align:center;">
+        🔴【本番環境】です。操作に注意！
+        </br>※functions.phpに記載。
+
+
+
+
 # 作業前に絶対やること（pull忘れ防止メモ）
 
 ## ✅ 1. 最初に必ず **pull** する！
